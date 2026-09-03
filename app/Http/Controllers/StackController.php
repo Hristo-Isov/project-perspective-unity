@@ -10,7 +10,7 @@ use Illuminate\Http\JsonResponse;
 
 class StackController extends Controller
 {
-    public function push(PushStackRequest $request, PushInStack $action): JsonResponse
+    public function store(PushStackRequest $request, PushInStack $action): JsonResponse
     {
         $item = $action->handle($request->validated('value'));
 
@@ -19,7 +19,7 @@ class StackController extends Controller
             ->setStatusCode(201);
     }
 
-    public function pop(PopFromStack $action): JsonResponse
+    public function destroy(PopFromStack $action): JsonResponse
     {
         $item = $action->handle();
 

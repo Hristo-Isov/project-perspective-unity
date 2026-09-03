@@ -11,7 +11,7 @@ use Illuminate\Http\JsonResponse;
 
 class KeyValueController extends Controller
 {
-    public function put(StoreKeyValueRequest $request, StoreKeyValue $action): JsonResponse
+    public function store(StoreKeyValueRequest $request, StoreKeyValue $action): JsonResponse
     {
         $item = $action->handle(
             $request->validated('key'),
@@ -19,12 +19,14 @@ class KeyValueController extends Controller
             $request->validated('ttl'),
         );
 
+        $status = $item->wasRecentlyCreated ? 201 : 200;
+
         return KeyValueItemResource::make($item)
             ->response()
-            ->setStatusCode(201);
+            ->setStatusCode($status);
     }
 
-    public function get(string $key, RetrieveKeyValue $action): JsonResponse
+    public function show(string $key, RetrieveKeyValue $action): JsonResponse
     {
         $item = $action->handle($key);
 
@@ -46,7 +48,7 @@ class KeyValueController extends Controller
     }
 
 
-    public function delete(string $key, ForgetKeyValue $action): JsonResponse
+    public function destroy(string $key, ForgetKeyValue $action): JsonResponse
     {
         $action->handle($key);
 

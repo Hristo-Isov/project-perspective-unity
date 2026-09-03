@@ -18,6 +18,14 @@ class KeyValueItemTest extends TestCase
         $this->assertDatabaseHas('key_value_items', ['key' => 'name', 'value' => 'Hristo']);
     }
 
+    public function test_overwriting_existing_key_returns_200(): void
+    {
+        $this->postJson('/api/store', ['key' => 'name', 'value' => 'Hristo'])
+            ->assertCreated();
+        $this->postJson('/api/store', ['key' => 'name', 'value' => 'Lalio'])
+            ->assertOk();
+    }
+
     public function test_getting_a_stored_key_returns_its_value(): void
     {
         $this->postJson('/api/store', ['key' => 'name', 'value' => 'Hristo']);
