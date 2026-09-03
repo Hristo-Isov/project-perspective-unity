@@ -28,7 +28,7 @@ class StackApiTest extends TestCase
         $this->postJson('/api/stack', ['value' => 'Hello']);
         $this->postJson('/api/stack', ['value' => 'World']);
 
-        $this->getJson('/api/stack')->assertOk()->assertJson(['value' => 'World']);
+        $this->deleteJson('/api/stack')->assertOk()->assertJson(['value' => 'World']);
         $this->assertDatabaseMissing('stack_items', ['value' => 'World']);
         $this->assertDatabaseHas('stack_items', ['value' => 'Hello']);
     }
@@ -38,12 +38,12 @@ class StackApiTest extends TestCase
         $this->postJson('/api/stack', ['value' => 'Hello']);
         $this->postJson('/api/stack', ['value' => 'World']);
 
-        $this->getJson('/api/stack')->assertOk()->assertJson(['value' => 'World']);
+        $this->deleteJson('/api/stack')->assertOk()->assertJson(['value' => 'World']);
 
         $this->postJson('/api/stack', ['value' => 'Again']);
 
-        $this->getJson('/api/stack')->assertOk()->assertJson(['value' => 'Again']);
-        $this->getJson('/api/stack')->assertOk()->assertJson(['value' => 'Hello']);
+        $this->deleteJson('/api/stack')->assertOk()->assertJson(['value' => 'Again']);
+        $this->deleteJson('/api/stack')->assertOk()->assertJson(['value' => 'Hello']);
     }
 
     public function test_lifo_order_with_many_items(): void
@@ -53,7 +53,7 @@ class StackApiTest extends TestCase
         }
 
         foreach (['5', '4', '3', '2', '1'] as $expected) {
-            $this->getJson('/api/stack')->assertOk()->assertJson(['value' => $expected]);
+            $this->deleteJson('/api/stack')->assertOk()->assertJson(['value' => $expected]);
         }
 
         $this->assertDatabaseCount('stack_items', 0);
@@ -61,7 +61,7 @@ class StackApiTest extends TestCase
 
     public function test_getting_from_an_empty_stack_returns_a_null_value(): void
     {
-        $this->getJson('/api/stack')->assertOk()->assertJson(['value' => null]);
+        $this->deleteJson('/api/stack')->assertOk()->assertJson(['value' => null]);
     }
 
     public function test_duplicate_values_are_stored_and_popped_independently(): void
@@ -69,9 +69,9 @@ class StackApiTest extends TestCase
         $this->postJson('/api/stack', ['value' => 'Duplicate']);
         $this->postJson('/api/stack', ['value' => 'Duplicate']);
 
-        $this->getJson('/api/stack')->assertOk()->assertJson(['value' => 'Duplicate']);
-        $this->getJson('/api/stack')->assertOk()->assertJson(['value' => 'Duplicate']);
-        $this->getJson('/api/stack')->assertOk()->assertJson(['value' => null]);
+        $this->deleteJson('/api/stack')->assertOk()->assertJson(['value' => 'Duplicate']);
+        $this->deleteJson('/api/stack')->assertOk()->assertJson(['value' => 'Duplicate']);
+        $this->deleteJson('/api/stack')->assertOk()->assertJson(['value' => null]);
 
         $this->assertDatabaseCount('stack_items', 0);
     }
@@ -79,11 +79,11 @@ class StackApiTest extends TestCase
     public function test_stack_is_reusable_after_being_emptied(): void
     {
         $this->postJson('/api/stack', ['value' => 'First']);
-        $this->getJson('/api/stack')->assertOk()->assertJson(['value' => 'First']);
-        $this->getJson('/api/stack')->assertOk()->assertJson(['value' => null]);
+        $this->deleteJson('/api/stack')->assertOk()->assertJson(['value' => 'First']);
+        $this->deleteJson('/api/stack')->assertOk()->assertJson(['value' => null]);
 
         $this->postJson('/api/stack', ['value' => 'Second']);
-        $this->getJson('/api/stack')->assertOk()->assertJson(['value' => 'Second']);
+        $this->deleteJson('/api/stack')->assertOk()->assertJson(['value' => 'Second']);
     }
 
     public function test_pushing_a_whitespace_only_value_is_rejected(): void
