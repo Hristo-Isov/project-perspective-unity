@@ -6,13 +6,15 @@ use App\Models\KeyValueItem;
 
 class StoreKeyValue
 {
-    public function handle(string $key, string $value, ?int $ttlSeconds = null): KeyValueItem
+    public function handle(array $data): KeyValueItem
     {
+        $ttl = $data['ttl'] ?? null;
+
         return KeyValueItem::updateOrCreate(
-            ['key' => $key],
+            ['key' => $data['key']],
             [
-                'value' => $value,
-                'expires_at' => $ttlSeconds !== null ? now()->addSeconds($ttlSeconds) : null,
+                'value' => $data['value'],
+                'expires_at' => $ttl !== null ? now()->addSeconds((int)$ttl) : null, 
             ],
         );
     }

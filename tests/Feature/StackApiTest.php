@@ -61,7 +61,7 @@ class StackApiTest extends TestCase
 
     public function test_getting_from_an_empty_stack_returns_a_null_value(): void
     {
-        $this->deleteJson('/api/stack')->assertOk()->assertJson(['value' => null]);
+        $this->deleteJson('/api/stack')->assertNotFound();
     }
 
     public function test_duplicate_values_are_stored_and_popped_independently(): void
@@ -71,7 +71,7 @@ class StackApiTest extends TestCase
 
         $this->deleteJson('/api/stack')->assertOk()->assertJson(['value' => 'Duplicate']);
         $this->deleteJson('/api/stack')->assertOk()->assertJson(['value' => 'Duplicate']);
-        $this->deleteJson('/api/stack')->assertOk()->assertJson(['value' => null]);
+        $this->deleteJson('/api/stack')->assertNotFound();
 
         $this->assertDatabaseCount('stack_items', 0);
     }
@@ -80,7 +80,7 @@ class StackApiTest extends TestCase
     {
         $this->postJson('/api/stack', ['value' => 'First']);
         $this->deleteJson('/api/stack')->assertOk()->assertJson(['value' => 'First']);
-        $this->deleteJson('/api/stack')->assertOk()->assertJson(['value' => null]);
+        $this->deleteJson('/api/stack')->assertNotFound();
 
         $this->postJson('/api/stack', ['value' => 'Second']);
         $this->deleteJson('/api/stack')->assertOk()->assertJson(['value' => 'Second']);

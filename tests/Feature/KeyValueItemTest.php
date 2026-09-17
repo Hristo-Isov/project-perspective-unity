@@ -44,25 +44,24 @@ class KeyValueItemTest extends TestCase
             ->assertExactJson(['key' => 'name', 'value' => 'Hristo']);
     }
 
-    public function test_getting_a_missing_key_returns_a_null_value(): void
+    public function test_getting_a_missing_key_returns_404(): void
     {
         $this->getJson('/api/store/age')
-            ->assertOk()
-            ->assertJson(['key' => 'age', 'value' => null]);
+            ->assertNotFound();
     }
 
     public function test_it_follows_the_example_ttl_sequence(): void
     {
         $this->postJson('/api/store', ['key' => 'name', 'value' => 'Hristo']);
-        $this->getJson('/api/store/name')->assertJson(['value' => 'Hristo']);
+        $this->getJson('/api/store/name')->assertOk()->assertJson(['value' => 'Hristo']);
 
-        $this->getJson('/api/store/age')->assertJson(['value' => null]);
+        $this->getJson('/api/store/age')->assertNotFound();
 
         $this->postJson('/api/store', ['key' => 'name', 'value' => 'Ivan', 'ttl' => 30]);
-        $this->getJson('/api/store/name')->assertJson(['value' => 'Ivan']);
+        $this->getJson('/api/store/name')->assertOk()->assertJson(['value' => 'Ivan']);
 
         $this->travel(31)->seconds();
-        $this->getJson('/api/store/name')->assertJson(['value' => null]);
+        $this->getJson('/api/store/name')->assertNotFound();
     }
 
     public function test_a_null_ttl_is_accepted_and_means_no_expiry(): void
@@ -88,7 +87,7 @@ class KeyValueItemTest extends TestCase
 
         $this->deleteJson('/api/store/name')->assertNoContent();
 
-        $this->getJson('/api/store/name')->assertJson(['value' => null]);
+        $this->getJson('/api/store/name')->assertNotFound();
         $this->assertDatabaseMissing('key_value_items', ['key' => 'name']);
     }
 
@@ -153,10 +152,10 @@ class KeyValueItemTest extends TestCase
         $this->postJson('/api/store', ['key' => 'name', 'value' => 'Hristo', 'ttl' => 30]);
 
         $this->travel(30)->seconds();
-        $this->getJson('/api/store/name')->assertJson(['value' => 'Hristo']);
+        $this->getJson('/api/store/name')->assertOk()->assertJson(['value' => 'Hristo']);
 
         $this->travel(1)->seconds();
-        $this->getJson('/api/store/name')->assertJson(['value' => null]);
+        $this->getJson('/api/store/name')->assertNotFound();
     }
 
     public function test_overwriting_a_key_replaces_its_ttl_with_a_shorter_one(): void
@@ -167,7 +166,7 @@ class KeyValueItemTest extends TestCase
         $this->assertDatabaseCount('key_value_items', 1);
 
         $this->travel(31)->seconds();
-        $this->getJson('/api/store/name')->assertJson(['value' => null]);
+        $this->getJson('/api/store/name')->assertNotFound();
     }
 
     public function test_overwriting_a_key_replaces_its_ttl_with_a_longer_one(): void
@@ -202,11 +201,11 @@ class KeyValueItemTest extends TestCase
         $this->postJson('/api/store', ['key' => 'name', 'value' => 'Hristo', 'ttl' => 30]);
 
         $this->travel(31)->seconds();
-        $this->getJson('/api/store/name')->assertJson(['value' => null]);
+        $this->getJson('/api/store/name')->assertNotFound();
 
         $this->postJson('/api/store', ['key' => 'name', 'value' => 'Ivan'])
             ->assertCreated();
-        $this->getJson('/api/store/name')->assertJson(['value' => 'Ivan']);
+        $this->getJson('/api/store/name')->assertOk()->assertJson(['value' => 'Ivan']);
     }
 
     public function test_overwriting_a_key_does_not_create_a_second_row(): void
@@ -223,7 +222,7 @@ class KeyValueItemTest extends TestCase
         $this->postJson('/api/store', ['key' => 'name', 'value' => 'Hristo', 'ttl' => 30]);
 
         $this->travel(31)->seconds();
-        $this->getJson('/api/store/name')->assertJson(['value' => null]);
+        $this->getJson('/api/store/name')->assertNotFound();
 
         $this->assertDatabaseMissing('key_value_items', ['key' => 'name']);
     }
@@ -251,7 +250,7 @@ class KeyValueItemTest extends TestCase
             ->assertCreated();
 
         $this->travel(31)->seconds();
-        $this->getJson('/api/store/name')->assertJson(['value' => null]);
+        $this->getJson('/api/store/name')->assertNotFound();
     }
 
     public function test_put_rejects_an_empty_key(): void
@@ -278,8 +277,8 @@ class KeyValueItemTest extends TestCase
 
         $this->travel(31)->seconds();
 
-        $this->getJson('/api/store/short')->assertJson(['value' => null]);
-        $this->getJson('/api/store/long')->assertJson(['value' => 'Ivan']);
+        $this->getJson('/api/store/short')->assertNotFound();
+        $this->getJson('/api/store/long')->assertOk()->assertJson(['value' => 'Ivan']);
     }
 
     public function test_deleting_one_key_does_not_affect_another(): void
@@ -289,8 +288,8 @@ class KeyValueItemTest extends TestCase
 
         $this->deleteJson('/api/store/name')->assertNoContent();
 
-        $this->getJson('/api/store/name')->assertJson(['value' => null]);
-        $this->getJson('/api/store/age')->assertJson(['value' => '30']);
+        $this->getJson('/api/store/name')->assertNotFound();
+        $this->getJson('/api/store/age')->assertOk()->assertJson(['value' => '30']);
     }
 
     public function test_a_whitespace_only_value_is_rejected(): void
