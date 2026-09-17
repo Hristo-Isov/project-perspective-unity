@@ -18,7 +18,7 @@ class KeyValueActionsTest extends TestCase
 
     private function storeKey(string $key, string $value, ?int $ttl = null): KeyValueItem
     {
-        return (new StoreKeyValue())->handle($key, $value, $ttl);
+        return (new StoreKeyValue())->handle(['key' => $key,  'value' => $value, 'ttl' => $ttl]);
     }
 
     private function retrieveValue(string $key): ?string
@@ -128,10 +128,10 @@ class KeyValueActionsTest extends TestCase
         $item = $this->storeKey('name', 'Hristo', 30);
 
         $this->travel(30)->seconds();
-        $this->assertFalse($item->fresh()->isExpired());
+        $this->assertSame(0, KeyValueItem::query()->expired()->count());
 
         $this->travel(1)->seconds();
-        $this->assertTrue($item->fresh()->isExpired());
+         $this->assertSame(1, KeyValueItem::query()->expired()->count());
     }
 
     public function test_get_returns_the_value_at_the_exact_expiry_second(): void
@@ -163,7 +163,7 @@ class KeyValueActionsTest extends TestCase
 
         $this->travel(10)->years();
 
-        $this->assertFalse($item->fresh()->isExpired());
+        $this->assertSame(0, KeyValueItem::query()->expired()->count());
         $this->assertSame('Hristo', $this->retrieveValue('name'));
     }
 

@@ -6,30 +6,20 @@ use App\Actions\Stack\PopFromStack;
 use App\Actions\Stack\PushInStack;
 use App\Http\Requests\PushStackRequest;
 use App\Http\Resources\StackItemResource;
-use Illuminate\Http\JsonResponse;
 
 class StackController extends Controller
 {
-    public function store(PushStackRequest $request, PushInStack $action): JsonResponse
+    public function store(PushStackRequest $request, PushInStack $action): StackItemResource
     {
-        $item = $action->handle($request->validated('value'));
-
-        return StackItemResource::make($item)
-            ->response()
-            ->setStatusCode(201);
+        return StackItemResource::make($action->handle($request->validated('value')));
     }
 
-    public function destroy(PopFromStack $action): JsonResponse
+    public function destroy(PopFromStack $action): StackItemResource
     {
         $item = $action->handle();
 
-        if ($item === null) {
-            return response()->json(['value' => null])
-                ->header('Cache-Control', 'no-store');
-        }
+        abort_if($item === null, 404);
 
-        return StackItemResource::make($item)
-            ->response()
-            ->header('Cache-Control', 'no-store');
+        return StackItemResource::make($item);
     }
 }

@@ -8,18 +8,7 @@ class RetrieveKeyValue
 {
     public function handle(string $key): ?KeyValueItem
     {
-        $item = KeyValueItem::query()->where('key', $key)->first();
-
-        if ($item === null) {
-            return null;
-        }
-
-        if ($item->isExpired()) {
-            $item->delete();
-
-            return null;
-        }
-
-        return $item;
+        KeyValueItem::query()->where('key',$key)->expired()->delete();
+        return KeyValueItem::query()->where('key',$key)->first();
     }
 }

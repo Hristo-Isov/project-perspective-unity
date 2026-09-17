@@ -2,11 +2,15 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
+#[Fillable(['key', 'value', 'expires_at'])]
 class KeyValueItem extends Model
 {
-    protected $fillable = ['key', 'value', 'expires_at'];
+    //protected $fillable = ['key', 'value', 'expires_at'];
 
     protected function casts(): array
     {
@@ -14,10 +18,9 @@ class KeyValueItem extends Model
             'expires_at' => 'datetime',
         ];
     }
-
-    public function isExpired(): bool
+    public function scopeExpired(Builder $query): void
     {
-        return $this->expires_at !== null && $this->expires_at->isPast();
+        $query->whereNotNull('expires_at')->where('expires_at', '<', now());
     }
 
 }

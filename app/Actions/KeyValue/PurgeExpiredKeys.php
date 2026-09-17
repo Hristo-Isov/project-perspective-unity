@@ -8,9 +8,6 @@ class PurgeExpiredKeys
 {
     public function handle(): int
     {
-        return KeyValueItem::query()
-            ->whereNotNull('expires_at')
-            ->where('expires_at', '<=', now())
-            ->delete();
+        return KeyValueItem::query()->expired()->delete();
     }
 }
